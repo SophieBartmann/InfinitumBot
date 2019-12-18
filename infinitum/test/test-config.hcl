@@ -7,6 +7,8 @@ Bot "infinitumBot" {
     username = "infinitum"
     realname = "infinitum"
     admins = ["bot_admin"]
+    server = "irc.freenode.net"
+    port = 6697
 
     channel "#infinitumbot" {
         modules = ["hangman", "glossary", "wikipedia"]

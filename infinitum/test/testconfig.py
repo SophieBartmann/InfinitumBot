@@ -22,6 +22,20 @@ class SimpleConfigTest(unittest.TestCase):
         debug = self.testConfig.debug
         self.assertEqual(debug, True)
 
-    def test_get_bot(self):
+    def test_get_bot_overview(self):
         bot_overview = self.testConfig.bot_overview
-        self.assertEqual(bot_overview, ['infinitumBot'])
+        self.assertEqual(bot_overview, {'infinitumBot'})
+
+    def test_get_bot_config(self):
+        bot_config = self.testConfig.get_bot('infinitumBot')
+        self.assertIsNotNone(bot_config)
+
+    def test_get_bot_admins(self):
+        bot_config = self.testConfig.get_bot('infinitumBot')
+        bot_admins = bot_config.bot_admins
+        self.assertEqual(bot_admins, ['bot_admin'])
+
+    def test_get_bot_channel(self):
+        bot_config = self.testConfig.get_bot('infinitumBot')
+        channel = bot_config.channel_overview
+        self.assertEqual(channel, {'#infinitumbot', '#infinitum2'})
