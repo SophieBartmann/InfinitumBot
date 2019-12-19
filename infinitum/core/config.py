@@ -201,8 +201,15 @@ class Config:
     
 
 def sdump_config(config):
+    """
+    Returns a dump of the dictionary behind the given config. Therefore the config-object must 
+    contain a config field.
+    """
     return json.dumps(config.config, indent=1)
 
 
 def dump_config(config):
+    """
+    Calls sdump_config and prints it to the stdout
+    """
     print(sdump_config(config))
