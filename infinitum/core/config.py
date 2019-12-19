@@ -1,7 +1,10 @@
 #! /bin/python3
 import hcl
 import logging
+import json
+
 from typing import List, Dict, Any, Union, Set
+
 
 DEBUG = 'debug'
 LOG_FILE = 'log_file'
@@ -27,13 +30,13 @@ class ModuleConfig:
 
 class ChannelConfig:
     def __init__(self, name: str, parent, config: Dict[str, Any]=None):
-        self._config = config
+        self.config = config
         self._name = name
         self._parent = parent
 
     @property
     def module_list(self) -> List[str]:
-        return self._config.get(MODULES, [])
+        return self.config.get(MODULES, [])
 
     @property
     def channel_name(self) -> str:
@@ -41,27 +44,27 @@ class ChannelConfig:
 
     @property
     def entry_message(self) -> str:
-        return self._config.get(ENTRY_MSG, '')
+        return self.config.get(ENTRY_MSG, '')
 
     @entry_message.setter
     def entry_message(self, value: str) -> None:
-        self._config[ENTRY_MSG] = value
+        self.config[ENTRY_MSG] = value
 
     @property
     def leave_message(self) -> str:
-        return self._config.get(LEAVE_MSG, '')
+        return self.config.get(LEAVE_MSG, '')
 
     @leave_message.setter
     def leave_message(self, value: str) -> None:
-        self._config[LEAVE_MSG] = value
+        self.config[LEAVE_MSG] = value
 
     @property
     def admins(self) -> List[str]:
-        return self._config.get(ADMINS, [])
+        return self.config.get(ADMINS, [])
 
     @admins.setter
     def admins(self, value: List[str]) -> None:
-        self._config[ADMINS] = value
+        self.config[ADMINS] = value
 
 
 class BotConfig:
@@ -195,4 +198,11 @@ class Config:
         if bot not in self._bot_cache.keys():
             self._bot_cache[bot] = BotConfig(bot, self.config[BOT][bot], self)
         return self._bot_cache[bot]
-                                            
+    
+
+def sdump_config(config):
+    return json.dumps(config.config, indent=1)
+
+
+def dump_config(config):
+    print(sdump_config(config))
