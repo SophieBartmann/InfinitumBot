@@ -4,7 +4,7 @@ import logging
 from .core.config import Config, sdump_config
 
 
-LOG_FORMAT = '%(asctime)s [%(levelname)s]: %(message)s'
+LOG_FORMAT = '%(asctime)s [%(levelname)s] [%(module)s]: %(message)s'
 LOG_DATEFMT = '%m/%d/%Y %I:%M:%S %p'
 
 
