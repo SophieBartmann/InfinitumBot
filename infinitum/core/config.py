@@ -29,7 +29,7 @@ class ModuleConfig:
     
 
 class ChannelConfig:
-    def __init__(self, name: str, parent, config: Dict[str, Any]=None):
+    def __init__(self, name: str, config: Dict[str, Any], parent):
         self.config = config
         self._name = name
         self._parent = parent
@@ -139,13 +139,26 @@ class BotConfig:
         else: # type must be dict
             return set(channel_list.keys())
 
-    def get_channel(self, channel: str) -> Union[ChannelConfig, None]:
-        if channel not in self.channel_overview:
+    def get_channel(self, channel_name: str) -> Union[ChannelConfig, None]:
+        if channel_name not in self.channel_overview:
+            logging.debug(f"Channel '{channel_name}' has been queried, but could not find it in"\
+                          "the config")
             return None
-        if channel not in self._channel_cache.keys():
-            self._channel_cache[channel] = ChannelConfig(channel, self.config[CHANNEL][channel],
-                                                         self)
-        return self.channel_cache[channel]
+        if channel_name not in self._channel_cache.keys():
+            logging.debug(f"Channel '{channel_name}' yet not within the cache, therefore creating it")
+            if type(self.config[CHANNEL]) is type([]):
+                for c in self.config[CHANNEL]:
+                    channel_dict = c.get(channel_name, None)
+                    if channel_dict is not None:
+                        break  # we've found the channel needed
+            else:
+                channel_dict = self.config[CHANNEL][channel_name]
+            self._channel_cache[channel_name] = ChannelConfig(channel_name, channel_dict, self)
+        if channel_name in self._channel_cache.keys():
+            logging.debug(f"Cache hit for channel '{channel_name}'")
+        else:
+            logging.warning(f"No config for channel '{channel_name}' could be found")
+        return self._channel_cache.get(channel_name, None)
 
 
 class Config:

@@ -39,3 +39,8 @@ class SimpleConfigTest(unittest.TestCase):
         bot_config = self.testConfig.get_bot('infinitumBot')
         channel = bot_config.channel_overview
         self.assertEqual(channel, {'#infinitumbot', '#infinitum2'})
+
+    def test_get_channel_config(self):
+        bot_config = self.testConfig.get_bot('infinitumBot')
+        channel = bot_config.get_channel('#infinitumbot')
+        self.assertIsNotNone(channel)

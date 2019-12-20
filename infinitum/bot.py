@@ -37,5 +37,6 @@ class InfinitumBot(pydle.Client):
     async def on_connect(self):
         for channel in self._config.channel_overview:
             await self.join(channel)
-            await self.message(channel, "huhu sagt der uhu")
+            entry_msg = self._config.get_channel(channel).entry_message
+            await self.message(channel, entry_msg)
 

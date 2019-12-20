@@ -10,7 +10,7 @@ Bot "InfinitumDev" {
 
     channel "#infinitum-bot" {
         modules = ["hangman", "glossary", "wikipedia"]
-        entry_message = "huhu sagt der uhu"
+        entry_message = "Huhu sagt der Uhu"
         leave_message = "und tschüss"
         admins = ["modinarium", "ultramod"]
     }
