@@ -10,14 +10,22 @@ Bot "infinitumBot" {
     server = "irc.freenode.net"
     port = 6697
 
-    channel "#infinitumbot" {
+    Channel "#infinitumbot" {
         modules = ["hangman", "glossary", "wikipedia"]
         entry_message = "huhu sagt der uhu"
         leave_message = "und tschüss"
         admins = ["channel_admin1", "channel_admin2"]
     }
 
-    channel "#infinitum2" {
+    Channel "#infinitum2" {
         
+    }
+
+    Module "food.Waitress" {
+
+    }
+
+    Module "fun.Peace" {
+
     }
 }

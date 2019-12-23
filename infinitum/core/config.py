@@ -13,14 +13,15 @@ NICK = 'nick'
 USERNAME = 'username'
 REALNAME = 'realname'
 ADMINS = 'admins'
-CHANNEL = 'channel'
+CHANNEL = 'Channel'
 ENTRY_MSG = 'entry_message'
 LEAVE_MSG = 'leave_message'
-MODULES = 'modules'
 SERVER = 'server'
 PORT = 'port'
 TLS = 'tls'
 TLS_VERIFY = 'tls_verify'
+MODULES = 'modules'
+MODULE = 'Module'
 
 
 class ModuleConfig:
@@ -72,6 +73,7 @@ class BotConfig:
         self.config = config
         self._parent = parent
         self._channel_cache = dict()
+        self._module_cache = dict()
         self._nick = nick
 
 
@@ -129,15 +131,7 @@ class BotConfig:
         returns: A list containing the names the Bot has been configured to. To get the
         channel-config object itself use #get_channel
         """
-        channel_list = self.config.get(CHANNEL, {})
-        if type(channel_list) is type([]):
-            channel_set = set()
-            for c in channel_list:
-                for name in c.keys():
-                    channel_set.add(name)
-            return channel_set
-        else: # type must be dict
-            return set(channel_list.keys())
+        return create_set_from_list_or_dict(self.config.get(CHANNEL, {}))
 
     def get_channel(self, channel_name: str) -> Union[ChannelConfig, None]:
         if channel_name not in self.channel_overview:
@@ -152,13 +146,39 @@ class BotConfig:
                     if channel_dict is not None:
                         break  # we've found the channel needed
             else:
-                channel_dict = self.config[CHANNEL][channel_name]
-            self._channel_cache[channel_name] = ChannelConfig(channel_name, channel_dict, self)
+                channel_dict = self.config[CHANNEL].get(channel_name, None)
+            if channel_dict is not None:
+                self._channel_cache[channel_name] = ChannelConfig(channel_name, channel_dict, self)
         if channel_name in self._channel_cache.keys():
             logging.debug(f"Cache hit for channel '{channel_name}'")
         else:
             logging.warning(f"No config for channel '{channel_name}' could be found")
         return self._channel_cache.get(channel_name, None)
+
+    @property
+    def module_overview(self) -> Set[str]:
+        return create_set_from_list_or_dict(self.config.get(MODULE, {}))
+
+    def get_module(self, modulename: str) -> Union[Dict[str, Any], None]:
+        if modulename not in self.module_overview:
+            logging.warn(f"Module '{modulename}' has been queried but no config could be found.")
+            return None
+        if modulename not in self._module_cache.keys():
+            modules = self.config.get(MODULE, {})
+            if type(modules) is type([]):
+                for m in modules:
+                    module_dict = m.get(modulename, None)
+                    if module_dict is not None:
+                        break
+            else:
+                module_dict = modules.get(modulename, None)
+            if module_dict is not None:
+                self._module_cache[modulename] = module_dict
+        if modulename in self._module_cache.keys():
+            logging.debug(f"Cache hit for module '{modulename}'.")
+        else:
+            logging.warning(f"No config for Module '{modulename}' could be found.")
+        return self._module_cache.get(modulename, None)
 
 
 class Config:
@@ -182,28 +202,12 @@ class Config:
         self.config[DEBUG] = value
 
     @property
-    def global_admins(self) -> List[str]:
-        return self.config.get(ADMINS, [])
-
-    @global_admins.setter
-    def global_admins(self, value: List[str]) -> None:
-        self.config[ADMINS] = value
-
-    @property
     def bot_overview(self) -> Set[str]:
         """
-        returns: A list containing the names of all defined bots. To get the bot-config object
+        returns: A set containing the names of all defined bots. To get the bot-config object
         itself use #get_bot
         """
-        bot_list = self.config.get(BOT, {})
-        if type(bot_list) is type([]):
-            bot_set = set()
-            for b in bot_set:
-                for name in b.keys():
-                    bot_set.add(name)
-            return bot_set
-        else:
-            return set(bot_list.keys())
+        return create_set_from_list_or_dict(self.config.get(BOT, {}))
 
     def get_bot(self, bot: str) -> Union[BotConfig, None]:
         if bot not in self.bot_overview:
@@ -211,7 +215,55 @@ class Config:
         if bot not in self._bot_cache.keys():
             self._bot_cache[bot] = BotConfig(bot, self.config[BOT][bot], self)
         return self._bot_cache[bot]
+
+
+
+def create_set_from_list_or_dict(list_or_dict: Union[List, Dict]) -> Set[str]:
+    """
+    Takes either a dict or a list containing dicts and returns a set containing (toplevel) keys
+    within the dict or the dicts within the list.
+    This is needed since something like this:
     
+    foo "bar"{
+        /* stuff */
+    }
+    
+    will be transformed to:
+
+    { foo: bar: {/* stuff */ } }
+    
+    but:
+    
+    foo "bar" {
+        /* stuff */
+    }
+    foo "nope" {
+        /* another stuff */
+    }
+    
+    will be transformed to:
+    
+    { foo: [
+        bar : { /* stuff */ },
+        nope: { /* another stuff */ }
+        ]
+    }
+
+    If you now want the keys (bar and nope) you have to handle it differently depending wether there
+    is more than one element or not.
+
+    This is the case when using multiple bot definitions within one config file, as well as multiple
+    channels within one bot and multiple module definitions.
+    """
+    if type(list_or_dict) is type([]):
+        oset = set()
+        for element in list_or_dict:
+            for key in element.keys():
+                oset.add(key)
+        return oset
+    else:
+        return set(list_or_dict.keys())
+
 
 def sdump_config(config):
     """
