@@ -40,7 +40,14 @@ class Waitress(ModulePrototype):
         return self._command_map
 
     async def on_channel_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
+        await self._on_msg(bot, target, send_by, msg)
+
+    async def on_query_msg(self, bot: InfinitumBot, send_by: str, msg: str) -> None:
+        await self._on_msg(bot, send_by, send_by, msg)
+
+    async def _on_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
         if re.fullmatch(Waitress.COOKIES_REGEX, msg):
             await bot.me_action(f"schenkt {send_by} einen {random.choice(self.cookies)}.", target)
+
 
 

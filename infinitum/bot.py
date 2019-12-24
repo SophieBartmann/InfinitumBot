@@ -63,7 +63,7 @@ class InfinitumBot(pydle.Client):
         return whois_info['identified']
 
     async def me_action(self, msg: str, target: str) -> None:
-        await self.message(target, '\001ACTION ' + msg)
+        await self.message(target, '\x01ACTION ' + msg)
 
     async def on_connect(self):
         for channel in self._config.channel_overview:
@@ -79,16 +79,38 @@ class InfinitumBot(pydle.Client):
         channel_modules = self._config.get_channel(target).module_list
         logging.debug(f"In channel '{target}' are the following {len(channel_modules)} modules active: {channel_modules}")
         logging.debug(f"matching {msg} against..")
-        for fq_module in channel_modules:
+        for module, _ in self._iter_matching_modules(channel_modules, msg):
+            await module.on_channel_msg(self, target, send_by, msg)
+
+    def _iter_matching_modules(self, modules_to_match, msg: str): 
+        for fq_module in modules_to_match:
             module = self._modules[fq_module]
             cmd_map = module.command_map()
             logging.debug(f".. module '{fq_module}'")
             for cmd_re in cmd_map.keys():
                 logging.debug(f"...with regex '{cmd_re}'")
                 if re.fullmatch(cmd_re, msg):
-                    logging.debug(f"Message in channel '{target}' send by '{send_by}' matches"\
-                                  f"'{fq_module}'")
-                    await module.on_channel_msg(self, target, send_by, msg)
+                    logging.debug(f"Message '{msg}' matches '{cmd_re}' of module '{fq_module}'")
+                    yield (module, fq_module)            
 
+    def _iter_channels_by_nick(self, nick: str):
+        logging.debug(f"Iterating over channels with user '{nick}' in")
+        for ch_name, ch_data in self.channels.items():
+            for user_nick in ch_data['users']:
+                if nick == user_nick:
+                    logging.debug(f"Found user '{nick}' in channel '{ch_name}'")
+                    yield ch_name
 
-
+    async def on_private_message(self, target: str, send_by: str, msg: str):
+        logging.debug("received private message")
+        if send_by == self._config.nick:
+            return
+        channels_with_user = [ch for ch in self._iter_channels_by_nick(send_by)]
+        logging.debug(f"User '{send_by}' is in {len(channels_with_user)} channels active:"\
+                      f"{channels_with_user}")
+        modules_with_user = set()
+        for channel in channels_with_user:
+            module_list = self._config.get_channel(channel).module_list
+            modules_with_user = modules_with_user.union(module_list)
+        for module, _ in self._iter_matching_modules(modules_with_user, msg):
+            await module.on_query_msg(self, send_by, msg)
