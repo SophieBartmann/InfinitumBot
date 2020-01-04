@@ -1,24 +1,24 @@
 debug = true 
 log_file = "./log.txt"
 
-Bot "InfinitumDev" {
+Bot "InfinitumDev42" {
     server = "chat.freenode.net"
     port = 6697
     username = "infinitum"
     realname = "infinitum"
-    admins = ["corvuscornix"]
+    admins = ["Yana"]
     
     Channel "#infinitum-bot" {
         modules = ["food.Waitress"]
-        entry_message = "Huhu sagt der Uhu"
-        leave_message = "und tschüss"
+        entry_message = "Schuhu sagt der Uhu"
+        leave_message = "und bye"
         admins = ["modinarium", "ultramod"]
     }
 
     Module "food.Waitress" {
-        cookies = "./cookies.csv"
-        drinks = "./drinks.csv"
-        food = "./food.csv"
+        cookies = "../cookies.csv"
+        drinks = "../drinks.csv"
+        food = "../food.csv"
     }
 
 }

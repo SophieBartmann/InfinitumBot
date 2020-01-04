@@ -25,6 +25,10 @@ class Waitress(ModulePrototype):
     DRINK_EXAMPLE = '.drink'
     DRINK_HELP = 'Gibt dem Nutzer einen zufälligen Drink'
 
+    FOOD_REGEX = r'^.*\.food.*$'
+    FOOD_EXAMPLE = '.food'
+    FOOD_HELP = 'Gibt dem Nutzer zufälliges Essem'
+
 
     def __init__(self):
         self.cookies = []
@@ -32,7 +36,8 @@ class Waitress(ModulePrototype):
         self.food = []
         self._config = None
         self._command_map = {Waitress.COOKIES_REGEX: (Waitress.COOKIES_EXAMPLE, Waitress.COOKIES_HELP),
-                             Waitress.DRINK_REGEX:(Waitress.DRINK_EXAMPLE, Waitress.DRINK_HELP)}
+                             Waitress.DRINK_REGEX:(Waitress.DRINK_EXAMPLE, Waitress.DRINK_HELP),
+                             Waitress.FOOD_REGEX: (Waitress.FOOD_EXAMPLE, Waitress.FOOD_HELP)}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
@@ -40,6 +45,8 @@ class Waitress(ModulePrototype):
         logging.debug(f"Successfully loaded {len(self.cookies)} cookies")
         self.drinks = utils.read_list(config[DRINKS_PATH])
         logging.debug(f"Successfully loaded {len(self.drinks)} drinks")
+        self.food = utils.read_list((config[FOOD_PATH]))
+        logging.debug(f"Successfully loaded {len(self.food)} dinners")
         #self.food = utils.read_list(config[FOOD_PATH])
 
     def command_map(self) -> Dict[str, str]:
@@ -55,7 +62,9 @@ class Waitress(ModulePrototype):
         if re.fullmatch(Waitress.COOKIES_REGEX, msg):
             await bot.me_action(f"schenkt {send_by} einen {random.choice(self.cookies)}.", target)
         if re.fullmatch(Waitress.DRINK_REGEX, msg):
-            await bot.me_action(f"schenkt {send_by} {random.choice(self.drinks)} ein", target)
+            await bot.me_action(f"schenkt {send_by} {random.choice(self.drinks)} ein.", target)
+        if re.fullmatch(Waitress.FOOD_REGEX, msg):
+            await bot.me_action(f"tischt {send_by} {random.choice(self.food)} auf.", target)
 
 
 
