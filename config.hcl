@@ -9,7 +9,7 @@ Bot "InfinitumDev42" {
     admins = ["Yana"]
     
     Channel "#infinitum-bot" {
-        modules = ["food.Waitress"]
+        modules = ["food.Waitress", "url.URL_resolver"]
         entry_message = "Schuhu sagt der Uhu"
         leave_message = "und bye"
         admins = ["modinarium", "ultramod"]
@@ -19,6 +19,10 @@ Bot "InfinitumDev42" {
         cookies = "../cookies.csv"
         drinks = "../drinks.csv"
         food = "../food.csv"
+    }
+
+    Module "url.URL_resolver"{
+
     }
 
 }
