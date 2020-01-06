@@ -12,4 +12,9 @@ def read_list(path: str) -> List[str]:
 
     return [s.strip() for s in content]
 
-    
+def replace_html(html: str)->str:
+    html = html.replace('\n', ' ').replace('\r', '')
+    html = html.replace("&lt;", "<")
+    html = html.replace("&gt;", ">")
+    html = html.replace("&amp;", "&")
+    return html

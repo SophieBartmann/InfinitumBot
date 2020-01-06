@@ -9,6 +9,7 @@ import html
 import re
 import urllib
 from urllib import request
+from infinitum import utils
 
 class URL_resolver(ModulePrototype):
     
@@ -50,7 +51,7 @@ class URL_resolver(ModulePrototype):
                 print(exc)
                 pass
 
-    def getTitle(self, resource):
+    def getTitle(self, resource: str):
         encoding = resource.headers.get_content_charset()
         if not encoding:
             encoding = 'utf-8'
@@ -58,10 +59,8 @@ class URL_resolver(ModulePrototype):
         title_re = re.compile("<title>(.+?)</title>")
         title = title_re.search(content).group(1)
         title = html.unescape(title)
-        title = title.replace('\n', ' ').replace('\r', '')
-        title = title.replace("&lt;", "<")
-        title = title.replace("&gt;", ">")
-        title = title.replace("&amp;", "&")
+        title = utils.replace_html(title)
         return title
+
 
 
