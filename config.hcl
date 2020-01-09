@@ -9,7 +9,7 @@ Bot "InfinitumDev42" {
     admins = ["Yana"]
     
     Channel "#infinitum-bot" {
-        modules = ["food.Waitress", "url.URL_resolver"]
+        modules = ["food.Waitress", "url.URL_resolver","icd_resolver.icd_resolver"]
         entry_message = "Schuhu sagt der Uhu"
         leave_message = "und bye"
         admins = ["modinarium", "ultramod"]
@@ -25,5 +25,8 @@ Bot "InfinitumDev42" {
 
     }
 
+    Module "icd_resolver.icd_resolver"{
+        icd_codes = "../icd_10.txt"
+    }
 }
 

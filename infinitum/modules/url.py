@@ -11,15 +11,15 @@ import urllib
 from urllib import request
 from infinitum import utils
 
+
 class URL_resolver(ModulePrototype):
-    
     URL_REGEX = r'^.*(?P<url>https?://[^\s]+).*$'
     URL_EXAMPLE = 'https://ich-bin-ein-Beispiel.org'
     URL_HELP = 'Gibt den Titel einer URL aus'
 
     def __init__(self):
         self._config = None
-        self._command_map = {URL_resolver.URL_REGEX:(URL_resolver.URL_EXAMPLE, URL_resolver.URL_HELP)}
+        self._command_map = {URL_resolver.URL_REGEX: (URL_resolver.URL_EXAMPLE, URL_resolver.URL_HELP)}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
@@ -61,6 +61,3 @@ class URL_resolver(ModulePrototype):
         title = html.unescape(title)
         title = utils.replace_html(title)
         return title
-
-
-
