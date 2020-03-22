@@ -1,5 +1,7 @@
 # VirtualEnv-directory ~falx
 venv/
+# real config
+/config.hcl
 
 
 # Byte-compiled / optimized / DLL files

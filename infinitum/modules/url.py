@@ -1,40 +1,41 @@
 #! /bin/python3
 
-from typing import Dict, Any
-
-from infinitum.core.api import ModulePrototype
-from infinitum.bot import InfinitumBot
-
 import html
 import re
 import urllib
+from typing import Dict, Any
 from urllib import request
+
 from infinitum import utils
+from infinitum.bot import InfinitumBot
+from infinitum.core.api import ModulePrototype, Command
 
 
-class URL_resolver(ModulePrototype):
+class URLResolver(ModulePrototype):
     URL_REGEX = r'^.*(?P<url>https?://[^\s]+).*$'
-    URL_EXAMPLE = 'https://ich-bin-ein-Beispiel.org'
+    URL_EXAMPLE = None
     URL_HELP = 'Gibt den Titel einer URL aus'
 
     def __init__(self):
         self._config = None
-        self._command_map = {URL_resolver.URL_REGEX: (URL_resolver.URL_EXAMPLE, URL_resolver.URL_HELP)}
+        url_cmd = Command.create_channel_command(URLResolver.URL_REGEX, URLResolver.URL_HELP,
+                                                 URLResolver.URL_EXAMPLE, self)
+        self._command_map = {URLResolver.URL_REGEX: url_cmd}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
 
-    def command_map(self) -> Dict[str, str]:
+    def command_map(self) -> Dict[str, Command]:
         return self._command_map
 
     async def on_channel_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
-        await self._on_msg(bot, target, send_by, msg)
+        await self._on_resolve_url(bot, target, send_by, msg)
 
     async def on_query_msg(self, bot: InfinitumBot, send_by: str, msg: str) -> None:
-        await self._on_msg(bot, send_by, send_by, msg)
+        await self._on_resolve_url(bot, send_by, send_by, msg)
 
-    async def _on_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
-        regex = "(?P<url>https?://[^\s]+)"
+    async def _on_resolve_url(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
+        regex = r"(?P<url>https?://[^\s]+)"
         url = re.search(regex, msg)
         if url is not None:
             url = url.group()
@@ -44,14 +45,15 @@ class URL_resolver(ModulePrototype):
                 url = url
                 req = urllib.request.Request(url, None, headers)
                 resource = urllib.request.urlopen(req)
-                title = self.getTitle(resource)
+                title = URLResolver.get_title(resource)
                 title = title[:350]
                 await bot.message(target, title)
             except Exception as exc:
                 print(exc)
                 pass
 
-    def getTitle(self, resource: str):
+    @staticmethod
+    def get_title(resource: str):
         encoding = resource.headers.get_content_charset()
         if not encoding:
             encoding = 'utf-8'

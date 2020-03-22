@@ -1,9 +1,9 @@
 #! /bin/python
 import logging
-import pydle
 import re
-
 from importlib import import_module
+
+import pydle
 
 from .core.config import BotConfig
 
@@ -25,7 +25,6 @@ class InfinitumBot(pydle.Client):
             module_instance = clazz()
             module_instance.setup(self, module_config)
             self._modules[fq_module_name] = module_instance
-            
 
     def get_config(self):
         return self._config
@@ -55,7 +54,7 @@ class InfinitumBot(pydle.Client):
         channel_admins = self._config.get_channel(channel).admins
         # An admin must set within the config AND must be identified to nickserv
         if nickname in self._config.bot_admins or nickname in channel_admins:
-            is_admin = is_identified(nickname)
+            is_admin = self.is_identified(nickname)
         return is_admin
 
     async def is_identified(self, nickname: str) -> bool:
@@ -77,21 +76,22 @@ class InfinitumBot(pydle.Client):
         if send_by == self._config.nick:
             return
         channel_modules = self._config.get_channel(target).module_list
-        logging.debug(f"In channel '{target}' are the following {len(channel_modules)} modules active: {channel_modules}")
+        logging.debug(
+            f"In channel '{target}' are the following {len(channel_modules)} modules active: {channel_modules}")
         logging.debug(f"matching {msg} against..")
-        for module, _ in self._iter_matching_modules(channel_modules, msg):
-            await module.on_channel_msg(self, target, send_by, msg)
+        for command, _ in self._iter_matching_commands(channel_modules, msg):
+            await command.channel_handle(self, target, send_by, msg)
 
-    def _iter_matching_modules(self, modules_to_match, msg: str): 
+    def _iter_matching_commands(self, modules_to_match, msg: str):
         for fq_module in modules_to_match:
             module = self._modules[fq_module]
             cmd_map = module.command_map()
             logging.debug(f".. module '{fq_module}'")
-            for cmd_re in cmd_map.keys():
+            for cmd_re, cmd in cmd_map.items():
                 logging.debug(f"...with regex '{cmd_re}'")
                 if re.fullmatch(cmd_re, msg):
                     logging.debug(f"Message '{msg}' matches '{cmd_re}' of module '{fq_module}'")
-                    yield (module, fq_module)            
+                    yield cmd, fq_module
 
     def _iter_channels_by_nick(self, nick: str):
         logging.debug(f"Iterating over channels with user '{nick}' in")
@@ -106,11 +106,10 @@ class InfinitumBot(pydle.Client):
         if send_by == self._config.nick:
             return
         channels_with_user = [ch for ch in self._iter_channels_by_nick(send_by)]
-        logging.debug(f"User '{send_by}' is in {len(channels_with_user)} channels active:"\
-                      f"{channels_with_user}")
+        logging.debug(f"User '{send_by}' is in {len(channels_with_user)} channels active: {channels_with_user}")
         modules_with_user = set()
         for channel in channels_with_user:
             module_list = self._config.get_channel(channel).module_list
             modules_with_user = modules_with_user.union(module_list)
-        for module, _ in self._iter_matching_modules(modules_with_user, msg):
-            await module.on_query_msg(self, send_by, msg)
+        for cmd, _ in self._iter_matching_commands(modules_with_user, msg):
+            await cmd.query_handle(self, send_by, msg)

@@ -1,0 +1,40 @@
+/*
+ Do not directly use this template. Copy it, and then change stuff accordingly as you need it.
+*/
+debug = true
+log_file = "./log.txt"
+
+Bot "nickname of the bot" {
+    server = "chat.freenode.net"
+    port = 6697
+    username = "Username of the bot"
+    realname = "realname of the bot"
+    admins = [
+        "name of global mod a",
+        "..."]
+
+    Channel "#infinitum-bot" {
+        modules = [
+            "food.Waitress",
+            "url.URLResolver",
+            "icd_resolver.ICDResolver"]
+        entry_message = "Schuhu sagt der Uhu"
+        leave_message = "und bye"
+        admins = [
+            "channel specific mod a",
+            "..."]
+    }
+
+    Module "food.Waitress" {
+        cookies = "cookies.csv"
+        drinks = "drinks.csv"
+        food = "food.csv"
+    }
+
+    Module "url.URLResolver" {}
+
+    Module "icd_resolver.ICDResolver" {
+        icd_codes = "icd_10.txt"
+    }
+}
+

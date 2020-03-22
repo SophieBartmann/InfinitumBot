@@ -1,28 +1,30 @@
 #! /bin/python3
 
-from typing import Dict, Any
-
-from infinitum.core.api import ModulePrototype
-from infinitum.bot import InfinitumBot
-
 import csv
 import re
+from typing import Dict, Any
+
+from infinitum.bot import InfinitumBot
+from infinitum.core.api import ModulePrototype, Command
 
 ICD_PATH = "icd_codes"
 
-class icd_resolver(ModulePrototype):
+
+class ICDResolver(ModulePrototype):
     ICD_REGEX = r'^.*\b\w\d{2}\.?\d?\b.*$'
     ICD_EXAMPLE = 'F84.5'
     ICD_HELP = 'Gibt die zugehörige Krankheit zu einem ICD Code aus.'
 
     def __init__(self):
         self._config = None
-        self._command_map = {icd_resolver.ICD_REGEX: (icd_resolver.ICD_EXAMPLE, icd_resolver.ICD_HELP)}
+        resolver_cmd = Command.create_full_command(ICDResolver.ICD_REGEX, ICDResolver.ICD_HELP,
+                                                   ICDResolver.ICD_EXAMPLE, self)
+        self._command_map = {ICDResolver.ICD_REGEX: resolver_cmd}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
 
-    def command_map(self) -> Dict[str, str]:
+    def command_map(self) -> Dict[str, Command]:
         return self._command_map
 
     async def on_channel_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
@@ -52,4 +54,3 @@ class icd_resolver(ModulePrototype):
         for row in icd10:
             if row[0] == code:
                 return code + ' - ' + row[1]
-        return 0

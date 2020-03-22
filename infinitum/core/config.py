@@ -1,10 +1,9 @@
 #! /bin/python3
-import hcl
-import logging
 import json
-
+import logging
 from typing import List, Dict, Any, Union, Set
 
+import hcl
 
 DEBUG = 'debug'
 LOG_FILE = 'log_file'
@@ -25,9 +24,9 @@ MODULE = 'Module'
 
 
 class ModuleConfig:
-    def __init__(self, config: Dict[str, Any]=None):
+    def __init__(self, config: Dict[str, Any] = None):
         pass
-    
+
 
 class ChannelConfig:
     def __init__(self, name: str, config: Dict[str, Any], parent):
@@ -75,7 +74,6 @@ class BotConfig:
         self._channel_cache = dict()
         self._module_cache = dict()
         self._nick = nick
-
 
     @property
     def nick(self) -> str:
@@ -135,7 +133,7 @@ class BotConfig:
 
     def get_channel(self, channel_name: str) -> Union[ChannelConfig, None]:
         if channel_name not in self.channel_overview:
-            logging.debug(f"Channel '{channel_name}' has been queried, but could not find it in"\
+            logging.debug(f"Channel '{channel_name}' has been queried, but could not find it in" \
                           "the config")
             return None
         if channel_name not in self._channel_cache.keys():
@@ -165,7 +163,8 @@ class BotConfig:
             return None
         if modulename not in self._module_cache.keys():
             modules = self.config.get(MODULE, {})
-            if type(modules) is type([]):
+            module_dict = None
+            if isinstance(modules, type([])):
                 for m in modules:
                     module_dict = m.get(modulename, None)
                     if module_dict is not None:
@@ -182,7 +181,7 @@ class BotConfig:
 
 
 class Config:
-    def __init__(self, path: str=None):
+    def __init__(self, path: str = None):
         self.path = path
         self.config = dict()
         if path:
@@ -192,7 +191,7 @@ class Config:
     def load(self, path: str) -> None:
         with open(path, 'r') as fp:
             self.config = hcl.load(fp)
-    
+
     @property
     def debug(self) -> None:
         return self.config.get(DEBUG, False)
@@ -215,7 +214,6 @@ class Config:
         if bot not in self._bot_cache.keys():
             self._bot_cache[bot] = BotConfig(bot, self.config[BOT][bot], self)
         return self._bot_cache[bot]
-
 
 
 def create_set_from_list_or_dict(list_or_dict: Union[List, Dict]) -> Set[str]:
