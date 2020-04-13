@@ -79,19 +79,22 @@ class InfinitumBot(pydle.Client):
         logging.debug(
             f"In channel '{target}' are the following {len(channel_modules)} modules active: {channel_modules}")
         logging.debug(f"matching {msg} against..")
-        for command, _ in self._iter_matching_commands(channel_modules, msg):
+        for command, module in self._iter_matching_commands(channel_modules, msg):
             await command.channel_handle(self, target, send_by, msg)
+        for module in self._iter_system_modules(channel_modules):
+            await module.on_channel_msg(self, target, send_by, msg)
 
     def _iter_matching_commands(self, modules_to_match, msg: str):
         for fq_module in modules_to_match:
             module = self._modules[fq_module]
             cmd_map = module.command_map()
             logging.debug(f".. module '{fq_module}'")
-            for cmd_re, cmd in cmd_map.items():
-                logging.debug(f"...with regex '{cmd_re}'")
-                if re.fullmatch(cmd_re, msg):
-                    logging.debug(f"Message '{msg}' matches '{cmd_re}' of module '{fq_module}'")
-                    yield cmd, fq_module
+            if cmd_map is not None:
+                for cmd_re, cmd in cmd_map.items():
+                    logging.debug(f"...with regex '{cmd_re}'")
+                    if re.fullmatch(cmd_re, msg):
+                        logging.debug(f"Message '{msg}' matches '{cmd_re}' of module '{fq_module}'")
+                        yield cmd, fq_module
 
     def _iter_channels_by_nick(self, nick: str):
         logging.debug(f"Iterating over channels with user '{nick}' in")
@@ -100,6 +103,14 @@ class InfinitumBot(pydle.Client):
                 if nick == user_nick:
                     logging.debug(f"Found user '{nick}' in channel '{ch_name}'")
                     yield ch_name
+
+    def _iter_system_modules(self, modules_to_match):
+        logging.debug(f"Iterating over system modules")
+        for fq_module in modules_to_match:
+            module = self._modules[fq_module]
+            if module.is_system_module():
+                logging.debug(f".. {fq_module} is a system module")
+                yield module
 
     async def on_private_message(self, target: str, send_by: str, msg: str):
         logging.debug("received private message")
@@ -111,5 +122,7 @@ class InfinitumBot(pydle.Client):
         for channel in channels_with_user:
             module_list = self._config.get_channel(channel).module_list
             modules_with_user = modules_with_user.union(module_list)
-        for cmd, _ in self._iter_matching_commands(modules_with_user, msg):
-            await cmd.query_handle(self, send_by, msg)
+        for command, module in self._iter_matching_commands(modules_with_user, msg):
+            await command.query_handle(self, send_by, msg)
+        for module in self._iter_system_modules(modules_with_user):
+            await module.on_query_msg(self, send_by, msg)

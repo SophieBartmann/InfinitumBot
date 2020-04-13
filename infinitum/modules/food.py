@@ -32,12 +32,12 @@ class Waitress(ModulePrototype):
         self.drinks = []
         self.food = []
         self._config = None
-        cookies_cmd = Command.create_full_command(Waitress.COOKIES_REGEX, Waitress.COOKIES_HELP,
-                                                  Waitress.COOKIES_EXAMPLE, self)
-        food_cmd = Command.create_full_command(Waitress.FOOD_REGEX, Waitress.FOOD_HELP, Waitress.FOOD_EXAMPLE,
+        cookies_cmd = Command.create_msg_command(Waitress.COOKIES_REGEX, Waitress.COOKIES_HELP,
+                                                 Waitress.COOKIES_EXAMPLE, self)
+        food_cmd = Command.create_msg_command(Waitress.FOOD_REGEX, Waitress.FOOD_HELP, Waitress.FOOD_EXAMPLE,
+                                              self)
+        drink_cmd = Command.create_msg_command(Waitress.DRINK_REGEX, Waitress.DRINK_HELP, Waitress.DRINK_EXAMPLE,
                                                self)
-        drink_cmd = Command.create_full_command(Waitress.DRINK_REGEX, Waitress.DRINK_HELP, Waitress.DRINK_EXAMPLE,
-                                                self)
         self._command_map = {Waitress.COOKIES_REGEX: cookies_cmd,
                              Waitress.FOOD_REGEX: food_cmd,
                              Waitress.DRINK_REGEX: drink_cmd}

@@ -5,7 +5,7 @@ import re
 from typing import Dict, Any
 
 from infinitum.bot import InfinitumBot
-from infinitum.core.api import ModulePrototype, Command
+from infinitum.core.api import ModulePrototype
 
 ICD_PATH = "icd_codes"
 
@@ -17,15 +17,12 @@ class ICDResolver(ModulePrototype):
 
     def __init__(self):
         self._config = None
-        resolver_cmd = Command.create_full_command(ICDResolver.ICD_REGEX, ICDResolver.ICD_HELP,
-                                                   ICDResolver.ICD_EXAMPLE, self)
-        self._command_map = {ICDResolver.ICD_REGEX: resolver_cmd}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
 
-    def command_map(self) -> Dict[str, Command]:
-        return self._command_map
+    def is_system_module(self) -> bool:
+        return True
 
     async def on_channel_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
         await self._on_msg(bot, target, send_by, msg)

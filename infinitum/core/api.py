@@ -28,7 +28,7 @@ class Command:
         return Command(pattern, None, module.on_query_msg, description, example, module)
 
     @staticmethod
-    def create_full_command(pattern: str, description: str, example: str, module):
+    def create_msg_command(pattern: str, description: str, example: str, module):
         return Command(pattern, module.on_channel_msg, module.on_query_msg, description, example, module)
 
 
@@ -50,7 +50,14 @@ class ModulePrototype:
         The given pattern will be applied over the whole incoming message, if there is a match
         then the whole message will be given to the module; else the module will not be called.
         """
-        pass
+        return {}
+
+    def is_system_module(self) -> bool:
+        """
+        Return true if this module needs to receive messages also non-command messages.
+        Defaults to False
+        """
+        return False
 
     async def on_join(self, bot: InfinitumBot, channel: str, user: str) -> None:
         """
@@ -60,13 +67,15 @@ class ModulePrototype:
 
     async def on_channel_msg(self, bot: InfinitumBot, target_channel: str, sent_by: str, msg: str) -> None:
         """
-        Called if a message has been sent to a channel the bot is joined to.
+        Called if either a command, created via create_channel_command or create_msg_command, is received
+        or is_system_module is True.
         """
         pass
 
     async def on_query_msg(self, bot: InfinitumBot, sent_by: str, msg: str) -> None:
         """
-        Called if the bot receives a private messsage.
+        Called if either a command, created via create_query_command or create_msg_command, is received
+        or is_system_modules is True.
         """
         pass
 

@@ -8,7 +8,7 @@ from urllib import request
 
 from infinitum import utils
 from infinitum.bot import InfinitumBot
-from infinitum.core.api import ModulePrototype, Command
+from infinitum.core.api import ModulePrototype
 
 
 class URLResolver(ModulePrototype):
@@ -18,15 +18,12 @@ class URLResolver(ModulePrototype):
 
     def __init__(self):
         self._config = None
-        url_cmd = Command.create_channel_command(URLResolver.URL_REGEX, URLResolver.URL_HELP,
-                                                 URLResolver.URL_EXAMPLE, self)
-        self._command_map = {URLResolver.URL_REGEX: url_cmd}
 
     def setup(self, bot: InfinitumBot, config: Dict[str, Any]) -> None:
         self._config = config
 
-    def command_map(self) -> Dict[str, Command]:
-        return self._command_map
+    def is_system_module(self) -> bool:
+        return True
 
     async def on_channel_msg(self, bot: InfinitumBot, target: str, send_by: str, msg: str) -> None:
         await self._on_resolve_url(bot, target, send_by, msg)
@@ -53,7 +50,7 @@ class URLResolver(ModulePrototype):
                 pass
 
     @staticmethod
-    def get_title(resource: str):
+    def get_title(resource):
         encoding = resource.headers.get_content_charset()
         if not encoding:
             encoding = 'utf-8'
