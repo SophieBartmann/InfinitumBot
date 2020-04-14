@@ -1,7 +1,9 @@
 #! /bin/python3
-import unittest
 import os
+import unittest
+
 from infinitum.core.config import Config
+
 
 class SimpleConfigTest(unittest.TestCase):
     def setUp(self):

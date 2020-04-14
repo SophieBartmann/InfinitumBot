@@ -1,12 +1,12 @@
 #! /bin/python3
-from typing import Dict, Callable, Union
+from typing import Dict
 
 from infinitum.bot import InfinitumBot
 
 
 class Command:
-    def __init__(self, pattern: str, channel_handle: Union[Callable[[InfinitumBot, str, str, str], None], None],
-                 query_handle: Union[Callable[[InfinitumBot, str, str], None], None], description: str, example: str,
+    def __init__(self, pattern: str, channel_handle,
+                 query_handle, description: str, example: str,
                  module):
         """
         Simple container class holding information needed to identify the functions to be called if a given pattern

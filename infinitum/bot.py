@@ -1,7 +1,10 @@
 #! /bin/python
 import logging
 import re
+import sqlite3
 from importlib import import_module
+from sqlite3 import Connection
+from threading import Timer
 
 import pydle
 
@@ -14,6 +17,7 @@ class InfinitumBot(pydle.Client):
         super().__init__(config.nick)
         self._config = config
         self._modules = dict()
+        self._timer_map = dict()
         self._setup()
 
     def _setup(self) -> None:
@@ -29,6 +33,16 @@ class InfinitumBot(pydle.Client):
     def get_config(self):
         return self._config
 
+    def get_db_connection(self) -> Connection:
+        # To be able to use type converters e.g. for date and timestamp:
+        # see https://docs.python.org/3/library/sqlite3.html#default-adapters-and-converters
+        connection = sqlite3.connect(self._config.database,
+                                     detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
+        # Set the row_factory for the ease of row-element access:
+        # see: https://docs.python.org/3.8/library/sqlite3.html#accessing-columns-by-name-instead-of-by-index
+        connection.row_factory = sqlite3.Row
+        return connection
+
     def run(self):
         if not self._config:  # TBD! or not self._config.is_valid():
             logging.critical("Tried run a bot without a valid config!")
@@ -37,7 +51,7 @@ class InfinitumBot(pydle.Client):
         port = self._config.port
         tls = self._config.tls
         tls_verify = self._config.tls_verify
-        logging.info(f"Connecting {self._config.nick} to {server} at port {port} using TLS={tls}"\
+        logging.info(f"Connecting {self._config.nick} to {server} at port {port} using TLS={tls}" \
                      f"and tls_verfiy={tls_verify}")
         super().run(hostname=server, port=port, tls=tls, tls_verify=False)
 
@@ -48,7 +62,7 @@ class InfinitumBot(pydle.Client):
                 logging.debug(f"Found user {nickname} in channel {channel}")
                 return True
         return False
-    
+
     async def is_admin(self, nickname: str, channel: str) -> bool:
         is_admin = False
         channel_admins = self._config.get_channel(channel).admins
@@ -126,3 +140,16 @@ class InfinitumBot(pydle.Client):
             await command.query_handle(self, send_by, msg)
         for module in self._iter_system_modules(modules_with_user):
             await module.on_query_msg(self, send_by, msg)
+
+    def register_timer(self, fun, interval):
+        self._timer_map[fun] = Timer(interval, self.timer_callback, fun, interval)
+        self._timer_map[fun].start()
+
+    def timer_callback(self, fun, interval):
+        restart = fun(self)
+        if restart:
+            self.register_timer(fun, interval)
+
+    def cancel_timer(self, fun):
+        self._timer_map[fun].cancel()
+        del self._timer_map[fun]

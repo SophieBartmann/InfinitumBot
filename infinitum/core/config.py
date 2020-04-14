@@ -21,6 +21,7 @@ TLS = 'tls'
 TLS_VERIFY = 'tls_verify'
 MODULES = 'modules'
 MODULE = 'Module'
+DATABASE = 'database'
 
 
 class ModuleConfig:
@@ -122,6 +123,14 @@ class BotConfig:
     @tls_verify.setter
     def tls_verify(self, value: bool) -> None:
         self.config[TLS_VERIFY] = value
+
+    @property
+    def database(self) -> str:
+        return self.config[DATABASE]
+
+    @database.setter
+    def database(self, new_value) -> None:
+        self.config[DATABASE] = new_value
 
     @property
     def channel_overview(self) -> Set[str]:
