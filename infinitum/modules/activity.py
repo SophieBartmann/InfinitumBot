@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from sqlite3 import Cursor, Connection
 from typing import Union, List, Dict
@@ -7,11 +8,11 @@ from infinitum.bot import InfinitumBot
 from infinitum.core.api import ModulePrototype, Command
 
 
+@dataclass
 class Activity:
-    def __init__(self, nick: str, channel: str, last_seen: datetime):
-        self.nick: str = nick
-        self.channel: str = channel
-        self.last_seen: datetime = last_seen
+    nick: str
+    channel: str
+    last_seen: datetime
 
 
 class ActivityProvider:
@@ -96,6 +97,9 @@ class IdleChecker(ModulePrototype):
         logging.debug("Setting up IdleChecker module.")
         self.provider = ActivityProvider(bot)
         self.provider.setup()
+        # every 30 sec check for idlers
+        # TODO transfer this param to the config
+        bot.register_timer(self.check_for_idlers, 30)
 
     def is_system_module(self) -> bool:
         return True
@@ -115,5 +119,6 @@ class IdleChecker(ModulePrototype):
             str_time = activity.last_seen.strftime("%d.%m.%y um %H:%M Uhr")
             await bot.message(target_channel, f"{user_seen} war zuletzt am {str_time} aktiv.")
 
-    def kick_all_idling(self, bot: InfinitumBot) -> bool:
-        pass
+    def check_for_idlers(self, bot: InfinitumBot) -> bool:
+        print("\n\nCHECK FOR IDLERS\n\n")
+        return True

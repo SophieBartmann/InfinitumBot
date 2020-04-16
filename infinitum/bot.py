@@ -142,7 +142,7 @@ class InfinitumBot(pydle.Client):
             await module.on_query_msg(self, send_by, msg)
 
     def register_timer(self, fun, interval):
-        self._timer_map[fun] = Timer(interval, self.timer_callback, fun, interval)
+        self._timer_map[fun] = Timer(interval, self.timer_callback, [fun, interval])
         self._timer_map[fun].start()
 
     def timer_callback(self, fun, interval):
